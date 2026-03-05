@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Task } from "../../types";
+import { Avatar } from "../../components";
 import { formatDate, classNames } from "../../lib/utils";
 import { parseISO, isPast, isToday } from "date-fns";
 import styles from "./TaskCard.module.css";
@@ -105,6 +106,16 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         ))}
         {task.tags.length > 2 && (
           <span className={styles.tag}>+{task.tags.length - 2}</span>
+        )}
+
+        {task.assignee && (
+          <div className={styles.assignee}>
+            <Avatar
+              src={task.assignee.photoURL}
+              name={task.assignee.displayName}
+              size="xs"
+            />
+          </div>
         )}
       </div>
     </div>

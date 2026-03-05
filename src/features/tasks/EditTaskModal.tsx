@@ -4,6 +4,7 @@ import {
   Task,
   TaskStatus,
   TaskPriority,
+  Assignee,
   PRIORITY_LABELS,
   STATUS_LABELS,
 } from "../../types";
@@ -11,6 +12,10 @@ import { updateTask, UpdateTaskData } from "./taskService";
 import { useAuthStore } from "../auth/authStore";
 import { useUIStore } from "../board/uiStore";
 import { useTasksStore } from "./tasksStore";
+import { useTeamStore } from "../team/teamStore";
+import { subscribeToTeamMembers } from "../team/teamService";
+import { AssigneeSelect } from "../team/AssigneeSelect";
+import { AddTeamMemberModal } from "../team/AddTeamMemberModal";
 import styles from "./TaskForm.module.css";
 
 interface EditTaskModalProps {
@@ -23,6 +28,8 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
   const user = useAuthStore((state) => state.user);
   const addToast = useUIStore((state) => state.addToast);
   const updateTaskLocal = useTasksStore((state) => state.updateTask);
+  const teamMembers = useTeamStore((state) => state.members);
+  const setTeamMembers = useTeamStore((state) => state.setMembers);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
@@ -32,7 +39,15 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
   const [dueDate, setDueDate] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [assignee, setAssignee] = useState<Assignee | null>(null);
+  const [showAddMember, setShowAddMember] = useState(false);
   const [errors, setErrors] = useState<{ title?: string }>({});
+
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = subscribeToTeamMembers(user.uid, setTeamMembers);
+    return () => unsubscribe();
+  }, [user, setTeamMembers]);
 
   useEffect(() => {
     if (task) {
@@ -43,6 +58,7 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
       setDueDate(task.dueDate || "");
       setTags(task.tags);
       setTagInput("");
+      setAssignee(task.assignee);
       setErrors({});
     }
   }, [task]);
@@ -87,6 +103,7 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
         priority,
         dueDate: dueDate || null,
         tags,
+        assignee,
       };
 
       await updateTask(user.uid, task.id, taskData);
@@ -177,6 +194,16 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
         />
 
         <div>
+          <label className={styles.label}>Assignee</label>
+          <AssigneeSelect
+            value={assignee}
+            onChange={setAssignee}
+            teamMembers={teamMembers}
+            onAddMember={() => setShowAddMember(true)}
+          />
+        </div>
+
+        <div>
           <label className={styles.label}>Tags</label>
           <div className={styles.tagsInput}>
             {tags.map((tag) => (
@@ -211,6 +238,11 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
           </div>
         </div>
       </div>
+
+      <AddTeamMemberModal
+        isOpen={showAddMember}
+        onClose={() => setShowAddMember(false)}
+      />
     </Modal>
   );
 }

@@ -187,6 +187,23 @@ export function TaskDetailModal({
               </span>
             </div>
             <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Assignee</span>
+              {task.assignee ? (
+                <div className={styles.assigneeDisplay}>
+                  <Avatar
+                    src={task.assignee.photoURL}
+                    name={task.assignee.displayName}
+                    size="xs"
+                  />
+                  <span className={styles.metaValue}>
+                    {task.assignee.displayName}
+                  </span>
+                </div>
+              ) : (
+                <span className={styles.metaValueEmpty}>Unassigned</span>
+              )}
+            </div>
+            <div className={styles.metaItem}>
               <span className={styles.metaLabel}>Due Date</span>
               <span className={styles.metaValue}>
                 {task.dueDate ? formatDate(task.dueDate) : "Not set"}

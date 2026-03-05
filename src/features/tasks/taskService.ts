@@ -13,7 +13,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import { Task, TaskStatus, TaskPriority } from "../../types";
+import { Task, TaskStatus, TaskPriority, Assignee } from "../../types";
 
 const getUserTasksRef = (userId: string) =>
   collection(db, "users", userId, "tasks");
@@ -28,6 +28,7 @@ export interface CreateTaskData {
   priority: TaskPriority;
   dueDate: string | null;
   tags: string[];
+  assignee: Assignee | null;
 }
 
 export interface UpdateTaskData {
@@ -38,6 +39,7 @@ export interface UpdateTaskData {
   dueDate?: string | null;
   tags?: string[];
   imageUrls?: string[];
+  assignee?: Assignee | null;
 }
 
 function convertTimestamp(timestamp: Timestamp | null): string {
@@ -64,6 +66,7 @@ export async function getTasks(userId: string): Promise<Task[]> {
       updatedAt: convertTimestamp(data.updatedAt),
       imageUrls: data.imageUrls || [],
       userId,
+      assignee: data.assignee || null,
     };
   });
 }
@@ -90,6 +93,7 @@ export function subscribeToTasks(
         updatedAt: convertTimestamp(data.updatedAt),
         imageUrls: data.imageUrls || [],
         userId,
+        assignee: data.assignee || null,
       };
     });
     callback(tasks);
@@ -104,6 +108,7 @@ export async function createTask(
   const docRef = await addDoc(tasksRef, {
     ...data,
     imageUrls: [],
+    assignee: data.assignee || null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

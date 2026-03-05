@@ -2,6 +2,13 @@ export type TaskStatus = "todo" | "in_progress" | "testing" | "done";
 
 export type TaskPriority = "low" | "medium" | "high";
 
+export interface Assignee {
+  uid: string;
+  displayName: string;
+  photoURL: string | null;
+  email: string | null;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -14,6 +21,7 @@ export interface Task {
   updatedAt: string;
   imageUrls: string[];
   userId: string;
+  assignee: Assignee | null;
 }
 
 export interface Comment {
@@ -29,6 +37,13 @@ export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
+  photoURL: string | null;
+}
+
+export interface TeamMember {
+  uid: string;
+  email: string;
+  displayName: string;
   photoURL: string | null;
 }
 

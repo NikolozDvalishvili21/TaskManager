@@ -4,7 +4,7 @@ import { classNames, getInitials } from "../../lib/utils";
 interface AvatarProps {
   src?: string | null;
   name?: string | null;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 

@@ -71,6 +71,7 @@ export function TaskDetailPage() {
               new Date().toISOString(),
             imageUrls: data.imageUrls || [],
             userId: user.uid,
+            assignee: data.assignee || null,
           });
         } else {
           addToast("Task not found", "error");
@@ -420,6 +421,7 @@ export function TaskDetailPage() {
                       new Date().toISOString(),
                     imageUrls: data.imageUrls || [],
                     userId: user.uid,
+                    assignee: data.assignee || null,
                   });
                 }
               },

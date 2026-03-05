@@ -1,8 +1,9 @@
-import { useState, KeyboardEvent } from "react";
+import { useState, useEffect, KeyboardEvent } from "react";
 import { Modal, Button, Input, TextArea } from "../../components";
 import {
   TaskStatus,
   TaskPriority,
+  Assignee,
   PRIORITY_LABELS,
   STATUS_LABELS,
 } from "../../types";
@@ -10,6 +11,10 @@ import { createTask, CreateTaskData } from "./taskService";
 import { useAuthStore } from "../auth/authStore";
 import { useUIStore } from "../board/uiStore";
 import { useTasksStore } from "./tasksStore";
+import { useTeamStore } from "../team/teamStore";
+import { subscribeToTeamMembers } from "../team/teamService";
+import { AssigneeSelect } from "../team/AssigneeSelect";
+import { AddTeamMemberModal } from "../team/AddTeamMemberModal";
 import styles from "./TaskForm.module.css";
 
 interface CreateTaskModalProps {
@@ -26,6 +31,8 @@ export function CreateTaskModal({
   const user = useAuthStore((state) => state.user);
   const addToast = useUIStore((state) => state.addToast);
   const addTask = useTasksStore((state) => state.addTask);
+  const teamMembers = useTeamStore((state) => state.members);
+  const setTeamMembers = useTeamStore((state) => state.setMembers);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
@@ -35,8 +42,16 @@ export function CreateTaskModal({
   const [dueDate, setDueDate] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [assignee, setAssignee] = useState<Assignee | null>(null);
+  const [showAddMember, setShowAddMember] = useState(false);
 
   const [errors, setErrors] = useState<{ title?: string }>({});
+
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = subscribeToTeamMembers(user.uid, setTeamMembers);
+    return () => unsubscribe();
+  }, [user, setTeamMembers]);
 
   const resetForm = () => {
     setTitle("");
@@ -46,6 +61,7 @@ export function CreateTaskModal({
     setDueDate("");
     setTags([]);
     setTagInput("");
+    setAssignee(null);
     setErrors({});
   };
 
@@ -94,6 +110,7 @@ export function CreateTaskModal({
         priority,
         dueDate: dueDate || null,
         tags,
+        assignee,
       };
 
       const taskId = await createTask(user.uid, taskData);
@@ -190,6 +207,16 @@ export function CreateTaskModal({
         />
 
         <div>
+          <label className={styles.label}>Assignee</label>
+          <AssigneeSelect
+            value={assignee}
+            onChange={setAssignee}
+            teamMembers={teamMembers}
+            onAddMember={() => setShowAddMember(true)}
+          />
+        </div>
+
+        <div>
           <label className={styles.label}>Tags</label>
           <div className={styles.tagsInput}>
             {tags.map((tag) => (
@@ -224,6 +251,11 @@ export function CreateTaskModal({
           </div>
         </div>
       </div>
+
+      <AddTeamMemberModal
+        isOpen={showAddMember}
+        onClose={() => setShowAddMember(false)}
+      />
     </Modal>
   );
 }
