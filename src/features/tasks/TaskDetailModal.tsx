@@ -12,6 +12,7 @@ import { formatDate, formatRelativeTime, classNames } from "../../lib/utils";
 import { useAuthStore } from "../auth/authStore";
 import { useUIStore } from "../board/uiStore";
 import { useTasksStore } from "./tasksStore";
+import { usePermissions } from "../roles/usePermissions";
 import { updateTask, deleteTask as deleteTaskService } from "./taskService";
 import {
   subscribeToComments,
@@ -36,6 +37,7 @@ export function TaskDetailModal({
   const user = useAuthStore((state) => state.user);
   const addToast = useUIStore((state) => state.addToast);
   const { deleteTask, updateTask: updateTaskLocal } = useTasksStore();
+  const { canEditTask, canDeleteTask, canCreateComment } = usePermissions();
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -154,13 +156,15 @@ export function TaskDetailModal({
         size="large"
         footer={
           <div className={styles.actions}>
-            <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
-              Delete
-            </Button>
+            {canDeleteTask && (
+              <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
+                Delete
+              </Button>
+            )}
             <Button variant="secondary" onClick={onClose}>
               Close
             </Button>
-            <Button onClick={onEdit}>Edit Task</Button>
+            {canEditTask && <Button onClick={onEdit}>Edit Task</Button>}
           </div>
         }
       >
@@ -354,23 +358,25 @@ export function TaskDetailModal({
               </div>
             )}
 
-            <div className={styles.commentForm}>
-              <Avatar src={user?.photoURL} name={user?.displayName} size="sm" />
-              <div className={styles.commentInput}>
-                <TextArea
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                />
+            {canCreateComment && (
+              <div className={styles.commentForm}>
+                <Avatar src={user?.photoURL} name={user?.displayName} size="sm" />
+                <div className={styles.commentInput}>
+                  <TextArea
+                    placeholder="Add a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleAddComment}
+                  disabled={!newComment.trim()}
+                  isLoading={isSubmittingComment}
+                >
+                  Post
+                </Button>
               </div>
-              <Button
-                onClick={handleAddComment}
-                disabled={!newComment.trim()}
-                isLoading={isSubmittingComment}
-              >
-                Post
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       </Modal>

@@ -31,6 +31,7 @@ import { EditTaskModal } from "../../features/tasks/EditTaskModal";
 import { useAuthStore } from "../../features/auth/authStore";
 import { useTasksStore } from "../../features/tasks/tasksStore";
 import { useUIStore } from "../../features/board/uiStore";
+import { usePermissions } from "../../features/roles/usePermissions";
 import {
   subscribeToTasks,
   updateTaskStatus,
@@ -59,6 +60,7 @@ function ColumnDropzone({ id, children }: ColumnDropzoneProps) {
 
 export function BoardPage() {
   const user = useAuthStore((state) => state.user);
+  const { canCreateTask } = usePermissions();
   const {
     tasks,
     setTasks,
@@ -223,23 +225,25 @@ export function BoardPage() {
             onChange={(v) => setStatusFilter(v as TaskStatus | "all")}
           />
         </div>
-        <Button
-          onClick={() => handleAddTask("todo")}
-          leftIcon={
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M8 3v10M3 8h10" strokeLinecap="round" />
-            </svg>
-          }
-        >
-          New Task
-        </Button>
+        {canCreateTask && (
+          <Button
+            onClick={() => handleAddTask("todo")}
+            leftIcon={
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M8 3v10M3 8h10" strokeLinecap="round" />
+              </svg>
+            }
+          >
+            New Task
+          </Button>
+        )}
       </div>
 
       <DndContext
@@ -300,22 +304,24 @@ export function BoardPage() {
                     </ColumnDropzone>
                   </SortableContext>
 
-                  <button
-                    className={styles.addTaskButton}
-                    onClick={() => handleAddTask(column.id)}
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
+                  {canCreateTask && (
+                    <button
+                      className={styles.addTaskButton}
+                      onClick={() => handleAddTask(column.id)}
                     >
-                      <path d="M7 2v10M2 7h10" strokeLinecap="round" />
-                    </svg>
-                    Add task
-                  </button>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M7 2v10M2 7h10" strokeLinecap="round" />
+                      </svg>
+                      Add task
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}

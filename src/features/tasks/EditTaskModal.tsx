@@ -15,6 +15,7 @@ import { useUIStore } from "../board/uiStore";
 import { useTasksStore } from "./tasksStore";
 import { subscribeToAllUsers } from "../users/userService";
 import { AssigneeSelect } from "../team/AssigneeSelect";
+import { sendTaskAssignmentEmail } from "../email/emailService";
 import styles from "./TaskForm.module.css";
 
 interface EditTaskModalProps {
@@ -104,6 +105,19 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
 
       await updateTask(user.uid, task.id, taskData);
       updateTaskLocal(task.id, taskData);
+
+      // Send email notification if assignee changed to a new person
+      const assigneeChanged =
+        assignee?.uid !== task.assignee?.uid && assignee && assignee.email;
+      if (assigneeChanged) {
+        sendTaskAssignmentEmail({
+          toEmail: assignee.email,
+          toName: assignee.displayName,
+          taskTitle: taskData.title || task.title,
+          taskDescription: taskData.description || task.description,
+          assignedBy: user.displayName || user.email || "Someone",
+        });
+      }
 
       addToast("Task updated successfully", "success");
       onClose();

@@ -14,6 +14,7 @@ import { useUIStore } from "../board/uiStore";
 import { useTasksStore } from "./tasksStore";
 import { subscribeToAllUsers } from "../users/userService";
 import { AssigneeSelect } from "../team/AssigneeSelect";
+import { sendTaskAssignmentEmail } from "../email/emailService";
 import styles from "./TaskForm.module.css";
 
 interface CreateTaskModalProps {
@@ -119,6 +120,17 @@ export function CreateTaskModal({
         updatedAt: new Date().toISOString(),
         userId: user.uid,
       });
+
+      // Send email notification if task is assigned to someone
+      if (assignee && assignee.email) {
+        sendTaskAssignmentEmail({
+          toEmail: assignee.email,
+          toName: assignee.displayName,
+          taskTitle: taskData.title,
+          taskDescription: taskData.description,
+          assignedBy: user.displayName || user.email || "Someone",
+        });
+      }
 
       addToast("Task created successfully", "success");
       handleClose();

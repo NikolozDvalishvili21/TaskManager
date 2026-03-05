@@ -1,16 +1,69 @@
+import { useState, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 import { useAuthStore } from "../../features/auth/authStore";
 import { useThemeStore } from "../../features/board/themeStore";
 import { useUIStore } from "../../features/board/uiStore";
+import { usePermissions } from "../../features/roles/usePermissions";
+import {
+  subscribeToAllUsers,
+  updateUserRole,
+} from "../../features/users/userService";
 import { Avatar, Button } from "../../components";
 import { classNames } from "../../lib/utils";
+import { TeamMember, UserRole, ROLE_LABELS } from "../../types";
 import styles from "./SettingsPage.module.css";
 
 export function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const { theme, setTheme } = useThemeStore();
   const addToast = useUIStore((state) => state.addToast);
+  const { canManageRoles, role: currentUserRole } = usePermissions();
+  const setRole = useAuthStore((state) => state.setRole);
+
+  const [allUsers, setAllUsers] = useState<TeamMember[]>([]);
+  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+  const [hasNoAdmin, setHasNoAdmin] = useState(false);
+  const [claimingAdmin, setClaimingAdmin] = useState(false);
+
+  // Always subscribe to users to check if there's an admin
+  useEffect(() => {
+    const unsubscribe = subscribeToAllUsers((users) => {
+      setAllUsers(users);
+      // Check if there are no admins
+      const adminExists = users.some((u) => u.role === "admin");
+      setHasNoAdmin(!adminExists);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleClaimAdmin = async () => {
+    if (!user) return;
+    setClaimingAdmin(true);
+    try {
+      await updateUserRole(user.uid, "admin");
+      setRole("admin");
+      addToast("You are now an Admin!", "success");
+    } catch (error) {
+      console.error("Failed to claim admin:", error);
+      addToast("Failed to claim admin role", "error");
+    } finally {
+      setClaimingAdmin(false);
+    }
+  };
+
+  const handleRoleChange = async (uid: string, newRole: UserRole) => {
+    setUpdatingRole(uid);
+    try {
+      await updateUserRole(uid, newRole);
+      addToast("Role updated successfully", "success");
+    } catch (error) {
+      console.error("Failed to update role:", error);
+      addToast("Failed to update role", "error");
+    } finally {
+      setUpdatingRole(null);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -41,10 +94,26 @@ export function SettingsPage() {
                   {user?.displayName || "User"}
                 </div>
                 <div className={styles.userEmail}>{user?.email}</div>
+                <div className={styles.userRole}>
+                  Role: {ROLE_LABELS[currentUserRole]}
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Claim Admin - Only shown when no admin exists */}
+        {hasNoAdmin && currentUserRole !== "admin" && (
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Claim Admin Role</h2>
+            <p className={styles.sectionDescription}>
+              No admin exists. Claim admin role to manage users.
+            </p>
+            <Button onClick={handleClaimAdmin} isLoading={claimingAdmin}>
+              Become Admin
+            </Button>
+          </div>
+        )}
 
         {/* Appearance Section */}
         <div className={styles.section}>
@@ -101,6 +170,50 @@ export function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* User Management Section - Admin Only */}
+        {canManageRoles && (
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>User Management</h2>
+            <p className={styles.sectionDescription}>
+              Manage user roles and permissions
+            </p>
+
+            <div className={styles.userList}>
+              {allUsers.map((member) => (
+                <div key={member.uid} className={styles.userRow}>
+                  <div className={styles.userInfo}>
+                    <Avatar
+                      src={member.photoURL}
+                      name={member.displayName}
+                      size="sm"
+                    />
+                    <div className={styles.userMeta}>
+                      <span className={styles.memberName}>
+                        {member.displayName}
+                      </span>
+                      <span className={styles.memberEmail}>{member.email}</span>
+                    </div>
+                  </div>
+                  <select
+                    className={styles.roleSelect}
+                    value={member.role || "viewer"}
+                    onChange={(e) =>
+                      handleRoleChange(member.uid, e.target.value as UserRole)
+                    }
+                    disabled={
+                      updatingRole === member.uid || member.uid === user?.uid
+                    }
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="pm">Project Manager</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Account Section */}
         <div className={classNames(styles.section, styles.dangerZone)}>
