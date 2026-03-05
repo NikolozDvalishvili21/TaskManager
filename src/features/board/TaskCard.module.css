@@ -1,0 +1,110 @@
+.taskCard {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.taskCard:hover {
+  border-color: var(--color-border-secondary);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.taskCardDragging {
+  opacity: 0.9;
+  transform: rotate(2deg);
+  box-shadow: var(--shadow-xl);
+}
+
+.taskTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+  line-height: var(--line-height-tight);
+}
+
+.taskDescription {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.taskMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-tertiary);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.priority {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.priorityHigh {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.priorityMedium {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.priorityLow {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.dueDate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.dueDateOverdue {
+  color: var(--color-error);
+}
+
+.dueDateIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.attachmentCount {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.attachmentIcon {
+  width: 12px;
+  height: 12px;
+}

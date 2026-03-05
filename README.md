@@ -1,73 +1,194 @@
-# React + TypeScript + Vite
+# TaskFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, production-quality Kanban-style task management platform built with React, TypeScript, Firebase, and Framer Motion.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Google Authentication** - Sign in with Google for secure access
+- **Kanban Board** - Organize tasks across To Do, In Progress, Testing, and Done columns
+- **Drag and Drop** - Move tasks between columns with smooth animations
+- **Task Management** - Create, edit, and delete tasks with titles, descriptions, priorities, due dates, and tags
+- **Comments** - Add and manage comments on tasks
+- **Image Attachments** - Upload and preview images on tasks
+- **Search & Filters** - Search tasks and filter by priority or status
+- **Dark Mode** - Toggle between light and dark themes
+- **Responsive Design** - Works on desktop, tablet, and mobile devices
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **React Router** - Client-side routing
+- **Firebase** - Authentication, Firestore database, and Storage
+- **Zustand** - State management
+- **@dnd-kit** - Drag and drop
+- **Framer Motion** - Animations
+- **CSS Modules** - Scoped styling
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18+
+- npm or yarn
+- A Firebase project
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Firebase Setup
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project or select an existing one
+3. Enable **Authentication** with Google provider:
+   - Go to Authentication > Sign-in method
+   - Enable Google provider
+4. Create a **Firestore Database**:
+   - Go to Firestore Database
+   - Create database in production or test mode
+5. Enable **Storage**:
+   - Go to Storage
+   - Get started with storage
+6. Get your Firebase config:
+   - Go to Project Settings > General
+   - Scroll to "Your apps" and add a web app
+   - Copy the config values
+
+### Firestore Security Rules
+
+Add these rules to your Firestore:
+
+```rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Storage Security Rules
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Add these rules to your Storage:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```rules
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
 ```
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd TaskManager
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create a `.env` file in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+4. Fill in your Firebase configuration in `.env`:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+5. Start the development server:
+
+```bash
+npm run dev
+```
+
+6. Open http://localhost:5173 in your browser
+
+## Project Structure
+
+```
+src/
+├── app/                    # App configuration
+│   ├── AppLayout.tsx       # Main layout with sidebar/topbar
+│   ├── ProtectedRoute.tsx  # Auth protection
+│   └── router.tsx          # Route definitions
+├── components/             # Reusable UI components
+│   ├── Avatar/
+│   ├── Button/
+│   ├── Card/
+│   ├── Dropdown/
+│   ├── EmptyState/
+│   ├── ImagePreview/
+│   ├── ImageUpload/
+│   ├── Input/
+│   ├── Modal/
+│   ├── Sidebar/
+│   ├── Spinner/
+│   ├── Toast/
+│   └── Topbar/
+├── features/               # Feature modules
+│   ├── auth/               # Authentication
+│   ├── board/              # Board state and components
+│   ├── comments/           # Comments service
+│   └── tasks/              # Task management
+├── hooks/                  # Custom hooks
+├── lib/                    # Utilities and configuration
+│   ├── firebase.ts         # Firebase initialization
+│   └── utils.ts            # Helper functions
+├── pages/                  # Page components
+│   ├── Board/
+│   ├── Login/
+│   ├── Settings/
+│   └── TaskDetail/
+├── styles/                 # Global styles
+│   ├── global.css
+│   └── tokens.css          # CSS custom properties
+└── types/                  # TypeScript types
+    └── index.ts
+```
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## Routes
+
+| Route               | Description                    |
+| ------------------- | ------------------------------ |
+| `/login`            | Login page with Google sign-in |
+| `/app/board`        | Main Kanban board              |
+| `/app/task/:taskId` | Task detail page               |
+| `/app/settings`     | User settings (theme toggle)   |
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a pull request
+
+## License
+
+MIT
