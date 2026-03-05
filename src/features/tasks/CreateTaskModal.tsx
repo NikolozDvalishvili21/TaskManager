@@ -126,6 +126,7 @@ export function CreateTaskModal({
       addTask({
         id: taskId,
         ...taskData,
+        assignedBy: assignedByInfo,
         imageUrls: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
