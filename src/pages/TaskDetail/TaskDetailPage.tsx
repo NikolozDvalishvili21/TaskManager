@@ -71,6 +71,7 @@ export function TaskDetailPage() {
             imageUrls: data.imageUrls || [],
             userId: data.ownerId,
             assignee: data.assignee || null,
+            assignedBy: data.assignedBy || null,
           });
         } else {
           addToast("Task not found", "error");
@@ -420,6 +421,7 @@ export function TaskDetailPage() {
                   imageUrls: data.imageUrls || [],
                   userId: data.ownerId,
                   assignee: data.assignee || null,
+                  assignedBy: data.assignedBy || null,
                 });
               }
             });
