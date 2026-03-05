@@ -109,7 +109,7 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
       // Send email notification if assignee changed to a new person
       const assigneeChanged =
         assignee?.uid !== task.assignee?.uid && assignee && assignee.email;
-      if (assigneeChanged) {
+      if (assigneeChanged && assignee.email) {
         sendTaskAssignmentEmail({
           toEmail: assignee.email,
           toName: assignee.displayName,
