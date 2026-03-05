@@ -34,6 +34,7 @@ import { useUIStore } from "../../features/board/uiStore";
 import { usePermissions } from "../../features/roles/usePermissions";
 import {
   subscribeToTasks,
+  subscribeToAllTasks,
   updateTaskStatus,
 } from "../../features/tasks/taskService";
 import { Task, TaskStatus, TaskPriority, COLUMNS } from "../../types";
@@ -60,7 +61,7 @@ function ColumnDropzone({ id, children }: ColumnDropzoneProps) {
 
 export function BoardPage() {
   const user = useAuthStore((state) => state.user);
-  const { canCreateTask } = usePermissions();
+  const { canCreateTask, isAdmin } = usePermissions();
   const {
     tasks,
     setTasks,
@@ -100,13 +101,19 @@ export function BoardPage() {
     if (!user) return;
 
     setIsLoading(true);
-    const unsubscribe = subscribeToTasks(user.uid, (newTasks) => {
-      setTasks(newTasks);
-      setIsLoading(false);
-    });
+    // Admins see all tasks, others see only their owned/assigned tasks
+    const unsubscribe = isAdmin
+      ? subscribeToAllTasks((newTasks) => {
+          setTasks(newTasks);
+          setIsLoading(false);
+        })
+      : subscribeToTasks(user.uid, (newTasks) => {
+          setTasks(newTasks);
+          setIsLoading(false);
+        });
 
     return () => unsubscribe();
-  }, [user, setTasks]);
+  }, [user, setTasks, isAdmin]);
 
   const filteredTasks = useMemo(() => getFilteredTasks(), [tasks, filters]);
 

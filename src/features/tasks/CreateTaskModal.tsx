@@ -100,6 +100,16 @@ export function CreateTaskModal({
     setIsSubmitting(true);
 
     try {
+      // Create assignedBy info from current user
+      const assignedByInfo = assignee
+        ? {
+            uid: user.uid,
+            displayName: user.displayName || "Unknown",
+            photoURL: user.photoURL,
+            email: user.email,
+          }
+        : null;
+
       const taskData: CreateTaskData = {
         title: title.trim(),
         description: description.trim(),
@@ -108,6 +118,7 @@ export function CreateTaskModal({
         dueDate: dueDate || null,
         tags,
         assignee,
+        assignedBy: assignedByInfo,
       };
 
       const taskId = await createTask(user.uid, taskData);

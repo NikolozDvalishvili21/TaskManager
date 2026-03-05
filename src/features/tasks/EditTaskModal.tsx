@@ -93,6 +93,19 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
     setIsSubmitting(true);
 
     try {
+      // Check if assignee changed
+      const assigneeChanged = assignee?.uid !== task.assignee?.uid;
+
+      // Create assignedBy info if assignee is being changed
+      const assignedByInfo = assigneeChanged && assignee
+        ? {
+            uid: user.uid,
+            displayName: user.displayName || "Unknown",
+            photoURL: user.photoURL,
+            email: user.email,
+          }
+        : undefined;
+
       const taskData: UpdateTaskData = {
         title: title.trim(),
         description: description.trim(),
@@ -101,15 +114,14 @@ export function EditTaskModal({ task, isOpen, onClose }: EditTaskModalProps) {
         dueDate: dueDate || null,
         tags,
         assignee,
+        ...(assignedByInfo && { assignedBy: assignedByInfo }),
       };
 
       await updateTask(user.uid, task.id, taskData);
       updateTaskLocal(task.id, taskData);
 
       // Send email notification if assignee changed to a new person
-      const assigneeChanged =
-        assignee?.uid !== task.assignee?.uid && assignee && assignee.email;
-      if (assigneeChanged && assignee.email) {
+      if (assigneeChanged && assignee && assignee.email) {
         sendTaskAssignmentEmail({
           toEmail: assignee.email,
           toName: assignee.displayName,
