@@ -50,9 +50,8 @@ export function TaskDetailPage() {
 
     const fetchTask = async () => {
       try {
-        const taskDoc = await getDoc(
-          doc(db, "users", user.uid, "tasks", taskId),
-        );
+        // Tasks are now in root-level collection
+        const taskDoc = await getDoc(doc(db, "tasks", taskId));
         if (taskDoc.exists()) {
           const data = taskDoc.data();
           setTask({
@@ -70,7 +69,7 @@ export function TaskDetailPage() {
               data.updatedAt?.toDate?.().toISOString() ||
               new Date().toISOString(),
             imageUrls: data.imageUrls || [],
-            userId: user.uid,
+            userId: data.ownerId,
             assignee: data.assignee || null,
           });
         } else {
@@ -401,31 +400,29 @@ export function TaskDetailPage() {
           setShowEditModal(false);
           // Refetch task to get updates
           if (user && taskId) {
-            getDoc(doc(db, "users", user.uid, "tasks", taskId)).then(
-              (taskDoc) => {
-                if (taskDoc.exists()) {
-                  const data = taskDoc.data();
-                  setTask({
-                    id: taskDoc.id,
-                    title: data.title,
-                    description: data.description,
-                    status: data.status,
-                    priority: data.priority,
-                    dueDate: data.dueDate || null,
-                    tags: data.tags || [],
-                    createdAt:
-                      data.createdAt?.toDate?.().toISOString() ||
-                      new Date().toISOString(),
-                    updatedAt:
-                      data.updatedAt?.toDate?.().toISOString() ||
-                      new Date().toISOString(),
-                    imageUrls: data.imageUrls || [],
-                    userId: user.uid,
-                    assignee: data.assignee || null,
-                  });
-                }
-              },
-            );
+            getDoc(doc(db, "tasks", taskId)).then((taskDoc) => {
+              if (taskDoc.exists()) {
+                const data = taskDoc.data();
+                setTask({
+                  id: taskDoc.id,
+                  title: data.title,
+                  description: data.description,
+                  status: data.status,
+                  priority: data.priority,
+                  dueDate: data.dueDate || null,
+                  tags: data.tags || [],
+                  createdAt:
+                    data.createdAt?.toDate?.().toISOString() ||
+                    new Date().toISOString(),
+                  updatedAt:
+                    data.updatedAt?.toDate?.().toISOString() ||
+                    new Date().toISOString(),
+                  imageUrls: data.imageUrls || [],
+                  userId: data.ownerId,
+                  assignee: data.assignee || null,
+                });
+              }
+            });
           }
         }}
       />

@@ -7,17 +7,15 @@ import styles from "./AssigneeSelect.module.css";
 interface AssigneeSelectProps {
   value: Assignee | null;
   onChange: (assignee: Assignee | null) => void;
-  teamMembers: TeamMember[];
+  users: TeamMember[];
   placeholder?: string;
-  onAddMember?: () => void;
 }
 
 export function AssigneeSelect({
   value,
   onChange,
-  teamMembers,
+  users,
   placeholder = "Assign to...",
-  onAddMember,
 }: AssigneeSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -45,18 +43,18 @@ export function AssigneeSelect({
     }
   }, [isOpen]);
 
-  const filteredMembers = teamMembers.filter(
-    (member) =>
-      member.displayName.toLowerCase().includes(search.toLowerCase()) ||
-      member.email.toLowerCase().includes(search.toLowerCase()),
+  const filteredUsers = users.filter(
+    (user) =>
+      user.displayName.toLowerCase().includes(search.toLowerCase()) ||
+      user.email.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleSelect = (member: TeamMember) => {
+  const handleSelect = (user: TeamMember) => {
     onChange({
-      uid: member.uid,
-      displayName: member.displayName,
-      photoURL: member.photoURL,
-      email: member.email,
+      uid: user.uid,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      email: user.email,
     });
     setIsOpen(false);
     setSearch("");
@@ -103,39 +101,37 @@ export function AssigneeSelect({
             ref={searchInputRef}
             type="text"
             className={styles.searchInput}
-            placeholder="Search team members..."
+            placeholder="Search users..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
 
           <div className={styles.optionsList}>
-            {filteredMembers.length > 0 ? (
-              filteredMembers.map((member) => (
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
                 <button
-                  key={member.uid}
+                  key={user.uid}
                   type="button"
                   className={classNames(
                     styles.option,
-                    value?.uid === member.uid && styles.optionSelected,
+                    value?.uid === user.uid && styles.optionSelected,
                   )}
-                  onClick={() => handleSelect(member)}
+                  onClick={() => handleSelect(user)}
                 >
                   <Avatar
-                    src={member.photoURL}
-                    name={member.displayName}
+                    src={user.photoURL}
+                    name={user.displayName}
                     size="sm"
                   />
                   <div className={styles.optionDetails}>
-                    <div className={styles.optionName}>
-                      {member.displayName}
-                    </div>
-                    <div className={styles.optionEmail}>{member.email}</div>
+                    <div className={styles.optionName}>{user.displayName}</div>
+                    <div className={styles.optionEmail}>{user.email}</div>
                   </div>
                 </button>
               ))
             ) : (
               <div className={styles.noResults}>
-                {search ? "No members found" : "No team members yet"}
+                {search ? "No users found" : "No users yet"}
               </div>
             )}
 
@@ -149,30 +145,6 @@ export function AssigneeSelect({
               </button>
             )}
           </div>
-
-          {onAddMember && (
-            <div className={styles.addMemberSection}>
-              <button
-                type="button"
-                className={styles.addMemberButton}
-                onClick={() => {
-                  setIsOpen(false);
-                  onAddMember();
-                }}
-              >
-                <svg
-                  className={styles.addMemberIcon}
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M8 3v10M3 8h10" strokeLinecap="round" />
-                </svg>
-                Add team member
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>

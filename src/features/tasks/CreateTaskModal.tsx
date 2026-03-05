@@ -4,6 +4,7 @@ import {
   TaskStatus,
   TaskPriority,
   Assignee,
+  TeamMember,
   PRIORITY_LABELS,
   STATUS_LABELS,
 } from "../../types";
@@ -11,10 +12,8 @@ import { createTask, CreateTaskData } from "./taskService";
 import { useAuthStore } from "../auth/authStore";
 import { useUIStore } from "../board/uiStore";
 import { useTasksStore } from "./tasksStore";
-import { useTeamStore } from "../team/teamStore";
-import { subscribeToTeamMembers } from "../team/teamService";
+import { subscribeToAllUsers } from "../users/userService";
 import { AssigneeSelect } from "../team/AssigneeSelect";
-import { AddTeamMemberModal } from "../team/AddTeamMemberModal";
 import styles from "./TaskForm.module.css";
 
 interface CreateTaskModalProps {
@@ -31,8 +30,6 @@ export function CreateTaskModal({
   const user = useAuthStore((state) => state.user);
   const addToast = useUIStore((state) => state.addToast);
   const addTask = useTasksStore((state) => state.addTask);
-  const teamMembers = useTeamStore((state) => state.members);
-  const setTeamMembers = useTeamStore((state) => state.setMembers);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
@@ -43,15 +40,14 @@ export function CreateTaskModal({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [assignee, setAssignee] = useState<Assignee | null>(null);
-  const [showAddMember, setShowAddMember] = useState(false);
+  const [allUsers, setAllUsers] = useState<TeamMember[]>([]);
 
   const [errors, setErrors] = useState<{ title?: string }>({});
 
   useEffect(() => {
-    if (!user) return;
-    const unsubscribe = subscribeToTeamMembers(user.uid, setTeamMembers);
+    const unsubscribe = subscribeToAllUsers(setAllUsers);
     return () => unsubscribe();
-  }, [user, setTeamMembers]);
+  }, []);
 
   const resetForm = () => {
     setTitle("");
@@ -211,8 +207,7 @@ export function CreateTaskModal({
           <AssigneeSelect
             value={assignee}
             onChange={setAssignee}
-            teamMembers={teamMembers}
-            onAddMember={() => setShowAddMember(true)}
+            users={allUsers}
           />
         </div>
 
@@ -251,11 +246,6 @@ export function CreateTaskModal({
           </div>
         </div>
       </div>
-
-      <AddTeamMemberModal
-        isOpen={showAddMember}
-        onClose={() => setShowAddMember(false)}
-      />
     </Modal>
   );
 }

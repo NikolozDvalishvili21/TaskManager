@@ -14,8 +14,9 @@ import {
 import { db } from "../../lib/firebase";
 import { Comment } from "../../types";
 
-const getCommentsRef = (userId: string, taskId: string) =>
-  collection(db, "users", userId, "tasks", taskId, "comments");
+// Comments are now under root-level tasks: tasks/{taskId}/comments
+const getCommentsRef = (_userId: string, taskId: string) =>
+  collection(db, "tasks", taskId, "comments");
 
 function convertTimestamp(timestamp: Timestamp | null): string {
   if (!timestamp) return new Date().toISOString();
@@ -24,7 +25,7 @@ function convertTimestamp(timestamp: Timestamp | null): string {
 
 export async function getComments(
   userId: string,
-  taskId: string,
+  taskId: string
 ): Promise<Comment[]> {
   const commentsRef = getCommentsRef(userId, taskId);
   const q = query(commentsRef, orderBy("createdAt", "asc"));
@@ -46,7 +47,7 @@ export async function getComments(
 export function subscribeToComments(
   userId: string,
   taskId: string,
-  callback: (comments: Comment[]) => void,
+  callback: (comments: Comment[]) => void
 ): Unsubscribe {
   const commentsRef = getCommentsRef(userId, taskId);
   const q = query(commentsRef, orderBy("createdAt", "asc"));
@@ -77,7 +78,7 @@ export interface CreateCommentData {
 export async function createComment(
   userId: string,
   taskId: string,
-  data: CreateCommentData,
+  data: CreateCommentData
 ): Promise<string> {
   const commentsRef = getCommentsRef(userId, taskId);
   const docRef = await addDoc(commentsRef, {
@@ -88,18 +89,10 @@ export async function createComment(
 }
 
 export async function deleteComment(
-  userId: string,
+  _userId: string,
   taskId: string,
-  commentId: string,
+  commentId: string
 ): Promise<void> {
-  const commentRef = doc(
-    db,
-    "users",
-    userId,
-    "tasks",
-    taskId,
-    "comments",
-    commentId,
-  );
+  const commentRef = doc(db, "tasks", taskId, "comments", commentId);
   await deleteDoc(commentRef);
 }
