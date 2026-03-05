@@ -2,6 +2,8 @@ export type TaskStatus = "todo" | "in_progress" | "testing" | "done";
 
 export type TaskPriority = "low" | "medium" | "high";
 
+export type UserRole = "admin" | "pm" | "viewer";
+
 export interface Assignee {
   uid: string;
   displayName: string;
@@ -38,6 +40,7 @@ export interface User {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  role: UserRole;
 }
 
 export interface TeamMember {
@@ -45,6 +48,7 @@ export interface TeamMember {
   email: string;
   displayName: string;
   photoURL: string | null;
+  role?: UserRole;
 }
 
 export interface Column {
@@ -70,4 +74,10 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
   in_progress: "In Progress",
   testing: "Testing",
   done: "Done",
+};
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  admin: "Admin",
+  pm: "Project Manager",
+  viewer: "Viewer",
 };

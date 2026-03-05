@@ -5,7 +5,7 @@ import { useAuthStore } from "./authStore";
 import { saveUser } from "../users/userService";
 
 export function useAuth() {
-  const { user, isLoading, setUser, setLoading } = useAuthStore();
+  const { user, isLoading, setUser, setLoading, setRole } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -16,12 +16,15 @@ export function useAuth() {
           displayName: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
         };
-        setUser(userData);
-        // Save user to Firestore for cross-user visibility
+
+        // Save user to Firestore and get their role
         try {
-          await saveUser(userData);
+          const role = await saveUser(userData);
+          setUser({ ...userData, role });
         } catch (error) {
           console.error("Failed to save user to Firestore:", error);
+          // Set default viewer role if save fails
+          setUser({ ...userData, role: "viewer" });
         }
       } else {
         setUser(null);
@@ -59,5 +62,6 @@ export function useAuth() {
     isAuthenticated: !!user,
     signInWithGoogle,
     logout,
+    setRole,
   };
 }
