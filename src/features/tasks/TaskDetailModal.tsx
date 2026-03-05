@@ -207,6 +207,21 @@ export function TaskDetailModal({
                 <span className={styles.metaValueEmpty}>Unassigned</span>
               )}
             </div>
+            {task.assignedBy && (
+              <div className={styles.metaItem}>
+                <span className={styles.metaLabel}>Assigned By</span>
+                <div className={styles.assigneeDisplay}>
+                  <Avatar
+                    src={task.assignedBy.photoURL}
+                    name={task.assignedBy.displayName}
+                    size="xs"
+                  />
+                  <span className={styles.metaValue}>
+                    {task.assignedBy.displayName}
+                  </span>
+                </div>
+              </div>
+            )}
             <div className={styles.metaItem}>
               <span className={styles.metaLabel}>Due Date</span>
               <span className={styles.metaValue}>

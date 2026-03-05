@@ -24,6 +24,7 @@ export interface Task {
   imageUrls: string[];
   userId: string;
   assignee: Assignee | null;
+  assignedBy: Assignee | null;
 }
 
 export interface Comment {
