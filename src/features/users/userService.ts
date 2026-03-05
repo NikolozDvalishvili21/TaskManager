@@ -5,8 +5,6 @@ import {
   getDocs,
   onSnapshot,
   Unsubscribe,
-  query,
-  orderBy,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { TeamMember } from "../../types";
@@ -36,10 +34,9 @@ export async function saveUser(user: UserData): Promise<void> {
 }
 
 export async function getAllUsers(): Promise<TeamMember[]> {
-  const q = query(usersRef, orderBy("displayName", "asc"));
-  const snapshot = await getDocs(q);
+  const snapshot = await getDocs(usersRef);
 
-  return snapshot.docs.map((doc) => {
+  const users = snapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       uid: doc.id,
@@ -48,23 +45,32 @@ export async function getAllUsers(): Promise<TeamMember[]> {
       photoURL: data.photoURL || null,
     };
   });
+
+  return users.sort((a, b) => a.displayName.localeCompare(b.displayName));
 }
 
 export function subscribeToAllUsers(
   callback: (users: TeamMember[]) => void
 ): Unsubscribe {
-  const q = query(usersRef, orderBy("displayName", "asc"));
+  return onSnapshot(usersRef, (snapshot) => {
+    const usersMap = new Map<string, TeamMember>();
 
-  return onSnapshot(q, (snapshot) => {
-    const users = snapshot.docs.map((doc) => {
+    snapshot.docs.forEach((doc) => {
       const data = doc.data();
-      return {
+      // Use Map to ensure no duplicates by uid
+      usersMap.set(doc.id, {
         uid: doc.id,
         email: data.email || "",
         displayName: data.displayName || "Anonymous",
         photoURL: data.photoURL || null,
-      };
+      });
     });
+
+    // Convert to array and sort by displayName
+    const users = Array.from(usersMap.values()).sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
     callback(users);
   });
 }
